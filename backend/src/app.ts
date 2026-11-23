@@ -8,6 +8,7 @@ app.use(express.json())
 
 const COLUNAS = `id, nome, raca, papel, local, descricao, nivel_poder AS "nivelPoder", status, icone`
 
+
 interface PersonagemPayload {
   nome?: unknown
   raca?: unknown
@@ -63,19 +64,16 @@ function validaMusica(b: MusicaPayload | null | undefined): boolean {
   )
 }
 
-// ==========================================
-// HEALTH CHECK (IEC)
-// ==========================================
+
 app.get("/api/health", (_req: Request, res: Response) => {
   res.status(200).json({
     status: "ok",
-    uptime: Math.floor(process.uptime())
+    uptime: Math.floor(process.uptime()),
+    versao: "1.0.1",
   })
 })
 
-// ==========================================
-// PERSONAGENS
-// ==========================================
+
 app.get("/personagens", async (_req: Request, res: Response) => {
   try {
     const { rows } = await pool.query(`SELECT ${COLUNAS} FROM personagens ORDER BY id`)
@@ -131,9 +129,7 @@ app.delete("/personagens/:id", async (req: Request, res: Response) => {
   }
 })
 
-// ==========================================
-// MELODIAS (OCARINA OF TIME)
-// ==========================================
+
 app.get("/musicas", async (_req: Request, res: Response) => {
   try {
     const { rows } = await pool.query("SELECT * FROM musicas ORDER BY id")
