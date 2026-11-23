@@ -2,6 +2,15 @@ import "dotenv/config"
 import app from "./app.js"
 import { pool } from "./config/database.js"
 
+app.get('/', (_req, res) => {
+  res.status(200).json({
+    nome: 'Hyrule API',
+    status: 'online',
+    health: '/api/health',
+  });
+});
+
+
 async function initDb(): Promise<void> {
   try {
     await pool.query(`
