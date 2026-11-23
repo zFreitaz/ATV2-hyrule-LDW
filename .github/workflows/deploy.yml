@@ -1,0 +1,55 @@
+name: CI/CD Backend - Hyrule
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Typecheck, Build e Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: backend/pnpm-lock.yaml
+
+      - name: Instalar dependências
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
+
+      - name: Validar TypeScript e Build
+        working-directory: backend
+        run: |
+          pnpm run typecheck
+          pnpm run build
+
+      - name: Validar Build da Imagem Docker
+        working-directory: backend
+        run: docker build -t hyrule-backend:ci .
+
+  deploy-render:
+    name: Deploy no Render
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Acionar Deploy Hook do Render
+        run: |
+          curl -f -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
